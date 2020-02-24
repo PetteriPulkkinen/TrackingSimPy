@@ -9,4 +9,7 @@ setup(name='RadarSimulator',
       author_email='petteri.pulkkinen@aalto.fi',
       licence='MIT',
       packages=find_namespace_packages(),
+      install_requires=[
+            'numpy'
+      ],
       zip_safe=False)
