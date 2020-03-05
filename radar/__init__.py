@@ -1,1 +1,1 @@
-from .monostatic_radar import MonostaticRadar
+from .monostatic_radar import MonostaticRadar, measurement_matrix
