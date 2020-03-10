@@ -10,6 +10,6 @@ setup(name='RadarSimulator',
       licence='MIT',
       packages=find_namespace_packages(),
       install_requires=[
-            'numpy'
+            'numpy', 'filterpy'
       ],
       zip_safe=False)
