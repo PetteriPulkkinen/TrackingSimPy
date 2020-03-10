@@ -115,6 +115,8 @@ class Radar2D(object):
         R = measurement_matrix(distance, radial_std(snr), angular_std(snr), angle)
         R_est = measurement_matrix(distance_est, radial_std(self.sn0), angular_std(self.sn0), angle_hat)
 
+        if np.isnan(R).any():
+            breakpoint()
         y = self.H @ target.x
         z = y + np.random.multivariate_normal(np.zeros(y.size), R).reshape(-1, 1)
         pd = detection_probability(snr, self.pf)

@@ -18,19 +18,21 @@ def singer_process_covariance(dt, corr_acc, std_acc):
 
 
 class BaseTarget(object):
-    def __init__(self, rcs):
-        self.rcs = rcs
+    def reset(self):
+        raise NotImplementedError
+
+    def update(self):
+        raise NotImplementedError
 
 
 class SingerModel(BaseTarget):
-    def __init__(self, stdAcc, corrAcc, x0, dt, rcs):
+    def __init__(self, stdAcc, corrAcc, x0, dt):
         """One dimensional singer model.
 
         :param stdAcc: Standard deviation of the acceleration noise
         :param corrAcc: Time constant of acceleration correlations (inverse of the actual time)
         :param x0:
         """
-        super(SingerModel, self).__init__(rcs)
         self.x0 = x0
         self.x = None
         self.reset()
@@ -50,7 +52,7 @@ class SingerModel(BaseTarget):
 
 
 class SingerModelMD(BaseTarget):
-    def __init__(self, stdAcc, corrAcc, x0, dim, dt, rcs):
+    def __init__(self, stdAcc, corrAcc, x0, dim, dt):
         """Multi-dimensional Singer model.
 
         :param stdAcc: Acceleration noise standard deviation
@@ -58,8 +60,7 @@ class SingerModelMD(BaseTarget):
         :param x0: Initial state [x, x', x'', y, y', y'', etc.]
         :param dim: How many dimensions used
         """
-        super(SingerModelMD, self).__init__(rcs)
-        self.models = [SingerModel(stdAcc, corrAcc, x0.flatten()[idx*3:(idx+1)*3], dt, rcs) for idx in range(dim)]
+        self.models = [SingerModel(stdAcc, corrAcc, x0.flatten()[idx*3:(idx+1)*3], dt) for idx in range(dim)]
         self.x = None
         self.reset()
 
