@@ -62,7 +62,7 @@ def angle_error_in_2D(alpha, beta):
         return 2*np.pi - np.max([alpha, beta]) + np.min([alpha, beta])
 
 
-RadarMeasurement = namedtuple('radar_measurement', ['z', 'R', 'R_est', 'angular_error', 'SNR', 'n_dwells'])
+RadarMeasurement = namedtuple('radar_measurement', ['z', 'R', 'R_est', 'angular_error', 'SNR', 'n_dwells', 'H'])
 
 
 class Radar2D(object):
@@ -122,6 +122,6 @@ class Radar2D(object):
         pd = detection_probability(snr, self.pf)
         n_dwells = 1 / pd
 
-        measurement = RadarMeasurement(z.flatten(), R, R_est, angular_error, snr, n_dwells)
+        measurement = RadarMeasurement(z.flatten(), R, R_est, angular_error, snr, n_dwells, self.H)
         return measurement
 

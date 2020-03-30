@@ -43,7 +43,7 @@ def simulation_loop(target, radar, tracker, update_policy, horizon):
             measurement = radar.measure(target, tracker)
             data.measurements.append(measurement)
 
-            innovation = measurement.z - tracker.H @ tracker.x
+            innovation = measurement.z - radar.H @ tracker.x
             data.innovations.append(innovation.flatten())
 
             tracker.update(measurement.z)

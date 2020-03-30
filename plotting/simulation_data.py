@@ -43,7 +43,7 @@ def plot_tracking_load(data, t, dt):
     load = np.array([data.measurements[idx].n_dwells for idx in range(len(data.measurements))]) * dt*0.01 / \
            (data.revisit_intervals*dt)
 
-    plt.plot(t[data.update_indexes], load, 'to')
+    plt.plot(t[data.update_indexes], load, 'o')
     plt.ylabel('Load')
     plt.xlabel('Time [s]')
     plt.grid(True)
@@ -58,8 +58,20 @@ def plot_angular_error(data):
 def plot_update_policy(data, t, dt):
     plt.figure()
 
-    plt.plot(t[data.update_indexes], data.revisit_intervals*dt, '-')
+    plt.plot(t[data.update_indexes], data.revisit_intervals*dt, '-o')
     plt.xlabel('Time [s]')
     plt.ylabel('Revisit interval [s]')
     plt.title('Track update policy')
     plt.grid(True)
+
+
+def plot_n_dwells(data, dt):
+    t = np.arange(data.predictions.shape[0])*dt
+    plt.figure()
+    n_dwells = np.array([meas.n_dwells for meas in data.measurements])
+    dwells = np.zeros((data.predictions.shape[0],))
+    dwells[data.update_indexes] = n_dwells
+    plt.plot(t, np.cumsum(dwells))
+    plt.xlabel('Time [s]')
+    plt.ylabel('Cumulative sum on number of dwells')
+    plt.show()

@@ -51,17 +51,18 @@ class ConstantUpdatePolicy(BaseUpdatePolicy):
 
 
 class ResidualUpdatePolicy(BaseUpdatePolicy):
-    def __init__(self, v0=1, K_max=10):
+    def __init__(self, v0=1, K_max=10, K_min=1):
         super(ResidualUpdatePolicy, self).__init__()
         self.v0 = v0
         self.K_max = K_max
+        self.K_min = K_min
 
     def update(self, tracker, measurement):
-        est_pos = (tracker.H @ tracker.x).flatten()
+        est_pos = (measurement.H @ tracker.x).flatten()
         distance = np.linalg.norm(est_pos - measurement.z.flatten())
         w, _ = np.linalg.eig(measurement.R_est)
         sig_th = np.sqrt(np.max(w))
-        self._K = np.max([1, np.round(self._K*np.power(self.v0*sig_th/distance, 1/3))])
+        self._K = np.max([self.K_min, np.round(self._K*np.power(self.v0*sig_th/distance, 1/3))])
         self._K = np.min([self._K, self.K_max])
 
     def reset(self):
