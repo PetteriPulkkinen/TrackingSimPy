@@ -40,7 +40,7 @@ class TrackingRadar(Sensor):
 
         # No detection occured, so the radar returns without measurement
         if not detection_occured:
-            return detection_occured, None
+            return detection_occured, None, None
 
         distance_est = np.linalg.norm(pos_est)
         distance = np.linalg.norm(pos)
