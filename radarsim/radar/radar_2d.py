@@ -1,8 +1,9 @@
 import numpy as np
 from collections import namedtuple
+from .generic_sensor import basic_measurement_matrix
 
 
-def measurement_matrix(distance, r_std, theta_std, angle):
+def measurement_covariance_matrix(distance, r_std, theta_std, angle):
     T = rotation_matrix(angle)
     R = np.array([
         [r_std**2, 0],
@@ -40,6 +41,12 @@ def detection_probability(snr, pf):
 
 
 def angle_in_2D(x, y):
+    """Calculate 2D angle in radians from x-axis [0, 2*pi].
+
+    Args:
+        x: x-coordinate
+        y: y-coordinate
+    """
     if x >= 0 and y >= 0:  # 1st quadrant
         return np.arctan2(y, x)
     elif x < 0 and y >= 0:  # 2nd quadrant
@@ -51,6 +58,11 @@ def angle_in_2D(x, y):
 
 
 def angle_error_in_2D(alpha, beta):
+    """Calculate minimum 2D angle in radians e.g. (pi/4, 7/4 pi) -> pi/4
+
+    alpha: first angle
+    beta: second angle
+    """
     assert(alpha < 2*np.pi)
     assert(beta < 2*np.pi)
 
@@ -89,9 +101,7 @@ class Radar2D(object):
         self.pf = prob_f
         self.beamwidth = beamwidth
 
-        self.H = np.zeros((self.dim, (order+1)*self.dim))
-        self.H[0, 0] = 1
-        self.H[1, self.order + 1] = 1
+        self.H = basic_measurement_matrix(self.dim, self.order)
 
     def measure(self, target, tracker):
         """
@@ -112,8 +122,8 @@ class Radar2D(object):
 
         snr = snr_with_beam_losses(self.sn0, angular_error, self.beamwidth)
 
-        R = measurement_matrix(distance, radial_std(snr), angular_std(snr), angle)
-        R_est = measurement_matrix(distance_est, radial_std(self.sn0), angular_std(self.sn0), angle_hat)
+        R = measurement_covariance_matrix(distance, radial_std(snr), angular_std(snr), angle)
+        R_est = measurement_covariance_matrix(distance_est, radial_std(self.sn0), angular_std(self.sn0), angle_hat)
 
         if np.isnan(R).any():
             breakpoint()

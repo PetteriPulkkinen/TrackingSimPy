@@ -1,5 +1,7 @@
 import os
 import pandas as pd
+import numpy as np
+
 
 def preprocess_trajectory_data(trajectory, dim, order):
     traj_trunc = trajectory[:, :dim]  # get the data up to desired dimension
@@ -7,9 +9,11 @@ def preprocess_trajectory_data(trajectory, dim, order):
     states[:, ::(order+1)] = traj_trunc
     return states
 
+
 def get_resource_path():
     cdir = os.path.dirname(__file__)
     return os.path.join(cdir, 'resources')
+
 
 def get_file_list():
     files = os.listdir(get_resource_path())
@@ -29,8 +33,3 @@ def load_trajectory(filename, order, dim=None):
     if dim is None:
         dim = trajectory.shape[1]
     return preprocess_trajectory_data(trajectory, dim, order)
-
-
-
-if __name__ == '__main__':
-    print(__file__)
