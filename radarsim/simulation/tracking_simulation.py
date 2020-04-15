@@ -13,16 +13,13 @@ class TrackingSimulation(object):
     FS = 100
 
     def __init__(self, n_max=20, x0=None, P0=None, traj_idx=0, sn0=50.0, pfa=1e-4,
-                 beamwidth=0.01, variance=1.0, save=False, k_max=1000, k_min=1, p_loss=0):
+                 beamwidth=0.01, variance=1.0, save=False, k_max=1000, k_min=1, p_loss=500):
         trajectory = load_trajectory(get_file_list()[traj_idx], self.ORDER, dim=self.DIM)
         self.target = TargetOnTrajectory(trajectory)
 
         tracker = kinematic_kf(self.DIM, self.ORDER, dt=1/self.FS)
         tracker.Q = Q_discrete_white_noise(
             self.DIM, 1/self.FS, var=variance, block_size=self.ORDER+1)
-
-        self.save = save
-        self.savers = None
 
         self.radar = TrackingRadar(self.target, sn0, pfa, beamwidth, self.DIM, self.ORDER)
 
@@ -34,6 +31,11 @@ class TrackingSimulation(object):
         self.k_min = k_min
         self.p_loss = p_loss  # Penalty for lost target
 
+        self.save = save
+        self.tracking_saver = None
+        self.computer_saver = None
+        self.radar_saver = None
+
     def reset(self):
         self.target.reset()
         if self.x0 is None:
@@ -43,19 +45,46 @@ class TrackingSimulation(object):
 
         self.tracker_computer.initialize(x0=x0, P0=P0)
         if self.save:
-            self.saver = Saver(self.tracker_computer.tracker)
+            self.tracking_saver = Saver(self.tracker_computer.tracker)
+            self.computer_saver = Saver(
+                self.tracker_computer,
+                ignore=(
+                    'tracker',
+                    'radar',
+                    'n_max'
+                )
+            )
+            self.radar_saver = Saver(
+                self.radar,
+                ignore=(
+                    'sn0',
+                    'pfa',
+                    'n_max',
+                    'target',
+                    'R',
+                    'H',
+                    'beamwidth'
+                )
+            )
         return np.ones(shape=self.DIM, dtype=np.float) * 1.2
 
     def step(self, revisit_interval):
         for _ in range(revisit_interval):
+            self.tracker_computer.predict()
             self.target.update()
+            if self.save:
+                self.tracking_saver.save()
 
-        update_successful, n_missed = self.tracker_computer.propagate(revisit_interval)
+        update_successful, n_missed = self.tracker_computer.update_track()
+
+        if self.save:
+            self.computer_saver.save()
+            self.radar_saver.save()
 
         reward = self._reward(update_successful, n_missed, revisit_interval)
         obs = self._observation(update_successful)
 
-        # Ensure that the trajectory does not overflow
+        # Ensure that the trajectory does not overflow at next step
         trajectory_ends = (self.target.current_idx + self.k_max) >= len(self.target.trajectory)
 
         if (trajectory_ends or not update_successful):
@@ -73,6 +102,6 @@ class TrackingSimulation(object):
 
     def _reward(self, update_successful, n_missed, revisit_interval):
         if update_successful:
-            return - (n_missed + 1)
+            return - (n_missed + 1) / revisit_interval
         else:
             return - self.p_loss
