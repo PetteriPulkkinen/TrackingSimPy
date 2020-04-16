@@ -13,7 +13,7 @@ class TrackingSimulation(object):
     FS = 100
 
     def __init__(self, n_max=20, x0=None, P0=None, traj_idx=0, sn0=50.0, pfa=1e-4,
-                 beamwidth=0.01, variance=1.0, save=False, k_max=1000, k_min=1, p_loss=500):
+                 beamwidth=0.01, variance=1.0, save=False, k_max=1000, k_min=1, p_loss=500, alpha=0.98):
         trajectory = load_trajectory(get_file_list()[traj_idx], self.ORDER, dim=self.DIM)
         self.target = TargetOnTrajectory(trajectory)
 
@@ -23,7 +23,7 @@ class TrackingSimulation(object):
 
         self.radar = TrackingRadar(self.target, sn0, pfa, beamwidth, self.DIM, self.ORDER)
 
-        self.tracker_computer = TrackingComputer(tracker, self.radar, n_max=n_max)
+        self.tracker_computer = TrackingComputer(tracker, self.radar, n_max=n_max, alpha=alpha)
         self.x0 = x0
         self.P0 = P0
 
@@ -43,16 +43,19 @@ class TrackingSimulation(object):
         if self.P0 is None:
             P0 = np.eye(self.target.x.size)*100
 
-        self.tracker_computer.initialize(x0=x0, P0=P0)
+        obs = np.ones(shape=self.DIM, dtype=np.float) * 1.2
+        self.tracker_computer.initialize(x0=x0, P0=P0, yn0_smoothed=obs)
         if self.save:
-            self.tracking_saver = Saver(self.tracker_computer.tracker)
+            self.tracking_saver = Saver(self.tracker_computer.tracker, skip_private=True)
             self.computer_saver = Saver(
                 self.tracker_computer,
                 ignore=(
                     'tracker',
                     'radar',
-                    'n_max'
-                )
+                    'n_max',
+                    'alpha'
+                ),
+                skip_private=True
             )
             self.radar_saver = Saver(
                 self.radar,
@@ -64,9 +67,10 @@ class TrackingSimulation(object):
                     'R',
                     'H',
                     'beamwidth'
-                )
+                ),
+                skip_private=True
             )
-        return np.ones(shape=self.DIM, dtype=np.float) * 1.2
+        return obs
 
     def step(self, revisit_interval):
         for _ in range(revisit_interval):
@@ -87,7 +91,7 @@ class TrackingSimulation(object):
         # Ensure that the trajectory does not overflow at next step
         trajectory_ends = (self.target.current_idx + self.k_max) >= len(self.target.trajectory)
 
-        if (trajectory_ends or not update_successful):
+        if trajectory_ends or not update_successful:
             done = True
         else:
             done = False

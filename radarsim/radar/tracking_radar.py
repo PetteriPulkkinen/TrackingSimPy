@@ -28,6 +28,7 @@ class TrackingRadar(Sensor):
 
         # real-time operation parameters
         self.snr = None
+        self.angle_error = None
 
     def illuminate(self, prediction):
         """
@@ -35,22 +36,22 @@ class TrackingRadar(Sensor):
             prediction: Predicted target state
 
         Returns:
-            Bool for detection occured, measurement and esimated measurement covariance
+            Bool for detection occurred, measurement and estimated measurement covariance
         """
         pos_est = (self.H @ prediction).flatten()
         pos = (self.H @ self.target.x).flatten()
         angle_est = angle_in_2D(pos_est[0], pos_est[1])
         angle = angle_in_2D(pos[0], pos[1])
-        angle_error = angle_error_in_2D(angle_est, angle)
+        self.angle_error = angle_error_in_2D(angle_est, angle)
 
-        self.snr = snr_with_beam_losses(self.sn0, angle_error, self.beamwidth)
+        self.snr = snr_with_beam_losses(self.sn0, self.angle_error, self.beamwidth)
         pd = detection_probability(self.snr, self.pfa)
 
-        detection_occured = bool(np.random.binomial(n=1, p=pd))
+        detection_occurred = bool(np.random.binomial(n=1, p=pd))
 
-        # No detection occured, so the radar returns without measurement
-        if not detection_occured:
-            return (detection_occured,
+        # No detection occurred, so the radar returns without measurement
+        if not detection_occurred:
+            return (detection_occurred,
                     np.ones(self.H.shape[0])*np.inf,
                     np.ones((self.H.shape[0],)*2)*np.inf)
 
@@ -63,4 +64,4 @@ class TrackingRadar(Sensor):
             distance, radial_std(self.snr), angular_std(self.snr), angle)
 
         z = super().measure(self.target.x, R=R)
-        return detection_occured, z, R_est
+        return detection_occurred, z, R_est
