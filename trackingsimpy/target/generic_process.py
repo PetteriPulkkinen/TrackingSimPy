@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class GenericTarget(object):
+class GenericProcess(object):
     def __init__(self, x0, F, Q):
         self.x0 = x0.reshape(-1, 1)
         self.x = self.x0
