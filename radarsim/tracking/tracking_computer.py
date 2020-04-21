@@ -30,6 +30,7 @@ class TrackingComputer(object):
         self.yn_smoothed = None  # smoothed normalized innovations
         self.R_est = None  # last estimated measurement matrix
         self.n_missed = None  # last number of missed detections
+        self.snr = None  # last snr
         self.current_time = 0
 
     def initialize(self, x0, P0, yn0_smoothed):
@@ -42,7 +43,8 @@ class TrackingComputer(object):
         """
         # reset radar here?
         self.current_time = 0
-        self.y = None
+        self.snr = self.radar.sn0
+        self.y = np.zeros(self.tracker.H.shape[0])
         self.R_est = None
         self.yn_smoothed = yn0_smoothed
 
@@ -77,7 +79,7 @@ class TrackingComputer(object):
         update_successful = True
 
         while True:
-            detection_occurred, self.z, self.R_est = self.radar.illuminate(self.tracker.x_prior)
+            detection_occurred, self.z, self.R_est, self.snr = self.radar.illuminate(self.tracker.x_prior)
 
             if detection_occurred:
                 break

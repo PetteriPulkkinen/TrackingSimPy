@@ -6,7 +6,7 @@ import numpy as np
 
 
 class TrackingRadar(Sensor):
-    """Class inteded to be used in a single target tracking scenarios."""
+    """Class intended to be used in a single target tracking scenarios."""
     def __init__(self, target, sn0, pfa, beamwidth, dim, order):
         """
         Args:
@@ -27,7 +27,6 @@ class TrackingRadar(Sensor):
         self.pfa = pfa
 
         # real-time operation parameters
-        self.snr = None
         self.angle_error = None
 
     def illuminate(self, prediction):
@@ -44,8 +43,8 @@ class TrackingRadar(Sensor):
         angle = angle_in_2D(pos[0], pos[1])
         self.angle_error = angle_error_in_2D(angle_est, angle)
 
-        self.snr = snr_with_beam_losses(self.sn0, self.angle_error, self.beamwidth)
-        pd = detection_probability(self.snr, self.pfa)
+        snr = snr_with_beam_losses(self.sn0, self.angle_error, self.beamwidth)
+        pd = detection_probability(snr, self.pfa)
 
         detection_occurred = bool(np.random.binomial(n=1, p=pd))
 
@@ -53,15 +52,13 @@ class TrackingRadar(Sensor):
         if not detection_occurred:
             return (detection_occurred,
                     np.ones(self.H.shape[0])*np.inf,
-                    np.ones((self.H.shape[0],)*2)*np.inf)
+                    np.ones((self.H.shape[0],)*2)*np.inf,
+                    0)
 
-        distance_est = np.linalg.norm(pos_est)
         distance = np.linalg.norm(pos)
 
-        R_est = measurement_covariance_matrix(
-            distance_est, radial_std(self.sn0), angular_std(self.sn0), angle_est)
         R = measurement_covariance_matrix(
-            distance, radial_std(self.snr), angular_std(self.snr), angle)
+            distance, radial_std(snr), angular_std(snr), angle)
 
         z = super().measure(self.target.x, R=R)
-        return detection_occurred, z, R_est
+        return detection_occurred, z, R, snr

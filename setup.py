@@ -1,7 +1,7 @@
 from setuptools import setup
 from setuptools import find_namespace_packages
 
-setup(name='RadarSimulator',
+setup(name='radarsim',
       version='0.1',
       description='Simulate different radar scenarios',
       url='https://github.com/PetteriPulkkinen/RadarSimulator',

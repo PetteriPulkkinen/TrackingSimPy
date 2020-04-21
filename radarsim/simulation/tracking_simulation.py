@@ -2,6 +2,7 @@ from radarsim.tracking import TrackingComputer
 from radarsim.radar import TrackingRadar
 from radarsim.target import TargetOnTrajectory
 from radarsim.trajectories import get_file_list, load_trajectory
+from radarsim.common.trigonometrics import pos_to_angle_error_2D, pos_to_radius_error_2D
 from filterpy.common import kinematic_kf, Q_discrete_white_noise, Saver
 
 import numpy as np
@@ -12,7 +13,7 @@ class TrackingSimulation(object):
     ORDER = 1
     FS = 100
 
-    def __init__(self, n_max=20, x0=None, P0=None, traj_idx=0, sn0=50.0, pfa=1e-4,
+    def __init__(self, n_max=20, x0=None, P0=None, traj_idx=None, sn0=50.0, pfa=1e-4,
                  beamwidth=0.01, variance=1.0, save=False, k_max=1000, k_min=1, p_loss=500, alpha=0.98):
         trajectory = load_trajectory(get_file_list()[traj_idx], self.ORDER, dim=self.DIM)
         self.target = TargetOnTrajectory(trajectory)
@@ -43,8 +44,7 @@ class TrackingSimulation(object):
         if self.P0 is None:
             P0 = np.eye(self.target.x.size)*100
 
-        obs = np.ones(shape=self.DIM, dtype=np.float) * 1.2
-        self.tracker_computer.initialize(x0=x0, P0=P0, yn0_smoothed=obs)
+        self.tracker_computer.initialize(x0=x0, P0=P0, yn0_smoothed=np.zeros((self.DIM,)))
         if self.save:
             self.tracking_saver = Saver(self.tracker_computer.tracker, skip_private=True)
             self.computer_saver = Saver(
@@ -70,7 +70,6 @@ class TrackingSimulation(object):
                 ),
                 skip_private=True
             )
-        return obs
 
     def step(self, revisit_interval):
         for _ in range(revisit_interval):
@@ -85,27 +84,8 @@ class TrackingSimulation(object):
             self.computer_saver.save()
             self.radar_saver.save()
 
-        reward = self._reward(update_successful, n_missed, revisit_interval)
-        obs = self._observation(update_successful)
-
-        # Ensure that the trajectory does not overflow at next step
+        # Ensure that the trajectory does no overflow at next step
         trajectory_ends = (self.target.current_idx + self.k_max) >= len(self.target.trajectory)
 
-        if trajectory_ends or not update_successful:
-            done = True
-        else:
-            done = False
+        return update_successful, n_missed, trajectory_ends
 
-        return obs, reward, done, {}
-
-    def _observation(self, update_successful):
-        if update_successful:
-            return self.tracker_computer.yn
-        else:
-            return np.ones(shape=self.DIM, dtype=np.float) * 100
-
-    def _reward(self, update_successful, n_missed, revisit_interval):
-        if update_successful:
-            return - (n_missed + 1) / revisit_interval
-        else:
-            return - self.p_loss
