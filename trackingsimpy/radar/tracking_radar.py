@@ -1,4 +1,5 @@
-from .generic_sensor import Sensor, basic_measurement_matrix
+from .generic_sensor import Sensor
+from trackingsimpy.common.measurement_model import position_measurement_matrix
 from .radar_2d import angle_in_2D, angle_error_in_2D, measurement_covariance_matrix
 from .radar_2d import radial_std, snr_with_beam_losses, detection_probability
 from .radar_2d import angular_std
@@ -19,7 +20,7 @@ class TrackingRadar(Sensor):
         if dim != 2:
             raise NotImplementedError
 
-        H = basic_measurement_matrix(dim, order)  # measure only position
+        H = position_measurement_matrix(dim, order)  # measure only position
         super(TrackingRadar, self).__init__(H=H, R=None)  # R will be set in real-time
         self.target = target
         self.beamwidth = beamwidth

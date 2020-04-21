@@ -1,6 +1,6 @@
 import numpy as np
 from collections import namedtuple
-from .generic_sensor import basic_measurement_matrix
+from trackingsimpy.common.measurement_model import position_measurement_matrix
 
 
 def measurement_covariance_matrix(distance, r_std, theta_std, angle):
@@ -101,7 +101,7 @@ class Radar2D(object):
         self.pf = prob_f
         self.beamwidth = beamwidth
 
-        self.H = basic_measurement_matrix(self.dim, self.order)
+        self.H = position_measurement_matrix(self.dim, self.order)
 
     def measure(self, target, tracker):
         """
