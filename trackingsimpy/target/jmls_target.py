@@ -1,5 +1,5 @@
 import numpy as np
-from .markov_chain import MarkovChain
+from trackingsimpy.common import MarkovChain
 
 
 class JMLSTarget(object):

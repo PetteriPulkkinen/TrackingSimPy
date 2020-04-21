@@ -1,8 +1,8 @@
-from radarsim.tracking import TrackingComputer
-from radarsim.radar import TrackingRadar
-from radarsim.target import TargetOnTrajectory
-from radarsim.trajectories import get_file_list, load_trajectory
-from radarsim.common.trigonometrics import pos_to_angle_error_2D, pos_to_radius_error_2D
+from trackingsimpy.tracking import TrackingComputer
+from trackingsimpy.radar import TrackingRadar
+from trackingsimpy.target import TargetOnTrajectory
+from trackingsimpy.trajectories import get_file_list, load_trajectory
+from trackingsimpy.common.trigonometrics import pos_to_angle_error_2D, pos_to_radius_error_2D
 from filterpy.common import kinematic_kf, Q_discrete_white_noise, Saver
 
 import numpy as np

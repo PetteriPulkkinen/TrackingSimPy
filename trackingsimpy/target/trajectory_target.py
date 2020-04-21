@@ -1,4 +1,4 @@
-from .singer_model import BaseTarget
+from .singer_target import BaseTarget
 import numpy as np
 
 

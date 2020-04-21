@@ -1,20 +1,5 @@
 import numpy as np
-
-
-def singer_process_matrix(dt, corr_acc):
-    return np.array([
-            [1, dt, (corr_acc*dt - 1 + np.exp(-corr_acc*dt) / np.power(corr_acc, 2))],
-            [0, 1 , (1 - np.exp(-corr_acc*dt)/corr_acc)],
-            [0, 0 , np.exp(-corr_acc*dt)],
-        ])
-
-
-def singer_process_covariance(dt, corr_acc, std_acc):
-    return 2*corr_acc*std_acc* np.array([
-            [dt ** 5 / 20, dt ** 4 / 8, dt ** 3 / 6],
-            [dt ** 4 / 8 , dt ** 3 / 3, dt ** 2 / 2],
-            [dt ** 3 / 6 , dt ** 2 / 2, dt         ]
-        ])
+from trackingsimpy.common.motion_model import singer_process_covariance, singer_process_matrix
 
 
 class BaseTarget(object):
