@@ -6,6 +6,7 @@ class BaseRISimulation(object):
     def __init__(self, computer: TrackingComputer, k_min, k_max, saver_ds=None):
         self.target = computer.radar.target
         self.radar = computer.radar
+        self.tracker = computer.tracker
         self.computer = computer
         self.k_min = k_min
         self.k_max = k_max
@@ -18,7 +19,8 @@ class BaseRISimulation(object):
     def reset(self):
         self.target.reset()
         self.computer.initialize(x0=self.target.x)
-        self.saver.reset()
+        if self.saver is not None:
+            self.saver.reset()
 
     def step(self, revisit_interval):
         for _ in range(revisit_interval):

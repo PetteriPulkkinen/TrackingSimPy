@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class Saver(object):
     def __init__(self, structure: dict):
         self.structure = structure
@@ -6,6 +9,10 @@ class Saver(object):
 
     def __getitem__(self, item):
         return self.storage[item]
+
+    def convert_to_numpy(self):
+        for (key, value) in self._iterate_structure():
+            self.storage[key][value] = np.array(self.storage[key][value])
 
     def reset(self):
         for key, value in self._iterate_structure():
