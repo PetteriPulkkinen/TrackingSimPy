@@ -1,11 +1,12 @@
 from .generic_sensor import Sensor
+from .base_radar import BaseRadar
 from trackingsimpy.common.measurement_model import position_measurement_matrix, meas_acovmat_2D
-from trackingsimpy.common.trigonometrics import angle_in_2D, angle_error_in_2D
+from trackingsimpy.common.trigonometrics import angle_in_2D, pos_to_angle_error_2D
 from .radar_tools import detection_probability, radial_std, snr_with_beam_losses, angular_std
 import numpy as np
 
 
-class TrackingRadar(Sensor):
+class PositionRadar(BaseRadar, Sensor):
     """Class intended to be used in a single target tracking scenarios."""
     def __init__(self, target, sn0, pfa, beamwidth, dim, order):
         """
@@ -18,10 +19,10 @@ class TrackingRadar(Sensor):
         """
         if dim != 2:
             raise NotImplementedError
+        BaseRadar.__init__(target, dim, order)
+        H = position_measurement_matrix(self.dim, self.order)
+        Sensor.__init__(H, R=None)
 
-        H = position_measurement_matrix(dim, order)  # measure only position
-        super(TrackingRadar, self).__init__(H=H, R=None)  # R will be set in real-time
-        self.target = target
         self.beamwidth = beamwidth
         self.sn0 = sn0
         self.pfa = pfa
@@ -35,13 +36,11 @@ class TrackingRadar(Sensor):
             prediction: Predicted target state
 
         Returns:
-            Bool for detection occurred, measurement and estimated measurement covariance
+            Bool for detection occurred, measurement and estimated measurement covariance, SNR
         """
         pos_est = (self.H @ prediction).flatten()
         pos = (self.H @ self.target.x).flatten()
-        angle_est = angle_in_2D(pos_est[0], pos_est[1])
-        angle = angle_in_2D(pos[0], pos[1])
-        self.angle_error = angle_error_in_2D(angle_est, angle)
+        self.angle_error = pos_to_angle_error_2D(pos, pos_est)
 
         snr = snr_with_beam_losses(self.sn0, self.angle_error, self.beamwidth)
         pd = detection_probability(snr, self.pfa)
@@ -57,8 +56,9 @@ class TrackingRadar(Sensor):
 
         distance = np.linalg.norm(pos)
 
+        angle = angle_in_2D(pos[0], pos[1])
         R = meas_acovmat_2D(
             distance, radial_std(snr), angular_std(snr), angle)
 
-        z = super().measure(self.target.x, R=R)
+        z = self.measure(self.target.x, R=R)
         return detection_occurred, z, R, snr
