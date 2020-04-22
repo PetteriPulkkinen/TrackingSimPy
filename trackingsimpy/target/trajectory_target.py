@@ -1,9 +1,9 @@
 from .base_target import BaseTarget
 
 
-class TargetOnTrajectory(BaseTarget):
+class TrajectoryTarget(BaseTarget):
     def __init__(self, trajectory, order, dim):
-        super(TargetOnTrajectory, self).__init__(order=order, dim=dim)
+        super(TrajectoryTarget, self).__init__(order=order, dim=dim)
         self.trajectory = trajectory
         self.length = trajectory.shape[0] - 1
         self.x = trajectory[0].reshape(-1, 1)
@@ -18,3 +18,7 @@ class TargetOnTrajectory(BaseTarget):
     def reset(self):
         self.current_idx = 0
         self.x = self.trajectory[0].reshape(-1, 1)
+
+    def trajectory_ends(self):
+        return self.current_idx + 1 >= self.length
+

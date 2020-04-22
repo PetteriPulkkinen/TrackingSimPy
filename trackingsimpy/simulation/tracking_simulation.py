@@ -1,11 +1,10 @@
-from trackingsimpy.tracking import TrackingComputer
-from trackingsimpy.radar import TrackingRadar
-from trackingsimpy.target import TargetOnTrajectory
-from trackingsimpy.trajectories import get_file_list, load_trajectory
-from trackingsimpy.common.trigonometrics import pos_to_angle_error_2D, pos_to_radius_error_2D
-from filterpy.common import kinematic_kf, Q_discrete_white_noise, Saver
-
+import filterpy.common
 import numpy as np
+
+from trackingsimpy.radar import PositionRadar
+from trackingsimpy.target import TrajectoryTarget
+from trackingsimpy.tracking import TrackingComputer
+from trackingsimpy.trajectories import get_file_list, load_trajectory
 
 
 class TrackingSimulation(object):
@@ -16,13 +15,13 @@ class TrackingSimulation(object):
     def __init__(self, n_max=20, x0=None, P0=None, traj_idx=None, sn0=50.0, pfa=1e-4,
                  beamwidth=0.01, variance=1.0, save=False, k_max=1000, k_min=1, p_loss=500, alpha=0.98):
         trajectory = load_trajectory(get_file_list()[traj_idx], self.ORDER, dim=self.DIM)
-        self.target = TargetOnTrajectory(trajectory)
+        self.target = TrajectoryTarget(trajectory)
 
-        tracker = kinematic_kf(self.DIM, self.ORDER, dt=1/self.FS)
-        tracker.Q = Q_discrete_white_noise(
+        tracker = filterpy.common.kinematic_kf(self.DIM, self.ORDER, dt=1 / self.FS)
+        tracker.Q = filterpy.common.Q_discrete_white_noise(
             self.DIM, 1/self.FS, var=variance, block_size=self.ORDER+1)
 
-        self.radar = TrackingRadar(self.target, sn0, pfa, beamwidth, self.DIM, self.ORDER)
+        self.radar = PositionRadar(self.target, sn0, pfa, beamwidth, self.DIM, self.ORDER)
 
         self.tracker_computer = TrackingComputer(tracker, self.radar, n_max=n_max, alpha=alpha)
         self.x0 = x0
@@ -46,8 +45,8 @@ class TrackingSimulation(object):
 
         self.tracker_computer.initialize(x0=x0, P0=P0, yn0_smoothed=np.zeros((self.DIM,)))
         if self.save:
-            self.tracking_saver = Saver(self.tracker_computer.tracker, skip_private=True)
-            self.computer_saver = Saver(
+            self.tracking_saver = filterpy.common.Saver(self.tracker_computer.tracker, skip_private=True)
+            self.computer_saver = filterpy.common.Saver(
                 self.tracker_computer,
                 ignore=(
                     'tracker',
@@ -57,7 +56,7 @@ class TrackingSimulation(object):
                 ),
                 skip_private=True
             )
-            self.radar_saver = Saver(
+            self.radar_saver = filterpy.common.Saver(
                 self.radar,
                 ignore=(
                     'sn0',

@@ -33,20 +33,19 @@ class TrackingComputer(object):
         self.snr = None  # last snr
         self.current_time = 0
 
-    def initialize(self, x0, P0, yn0_smoothed):
+    def initialize(self, x0, P0):
         """Initialize tracking computer before starting the tracking task.
 
         Args:
             x0: Initial state estimate
             P0: Initial covariance estimate
-            yn0_smoothed: Initial conditions for the smoothed innovation
         """
         # reset radar here?
         self.current_time = 0
         self.snr = self.radar.sn0
         self.y = np.zeros(self.tracker.H.shape[0])
         self.R_est = None
-        self.yn_smoothed = yn0_smoothed
+        self.yn_smoothed = self.tracker.H @ x0
 
         # A little bit of dirty hack because IMMEstimator works differently than Kalman filter
         if type(self.tracker) == IMMEstimator:

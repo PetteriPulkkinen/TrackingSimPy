@@ -10,6 +10,9 @@ class BaseTarget(object):
     def reset(self):
         raise NotImplementedError
 
+    def trajectory_ends(self):
+        raise NotImplementedError
+
     @property
     def state(self):
         return self.x
