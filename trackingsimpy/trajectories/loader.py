@@ -23,9 +23,10 @@ def get_file_list():
 def load_trajectory(filename, order, dim=None):
     """Loads target trajectory from a given file. Works only for position trajectories.
 
-    :param filename: The trajectory file to be loaded from the resource folder.
-    :param order: Desired order for the state variable.
-    :dim dim: Desired dimension for the trajectory.
+    :param dim: Dimension to be used from the trajectory file
+    :param filename: The trajectory file to be loaded from the resource folder
+    :param order: Desired order for the state variable
+    :dim dim: Desired dimension for the trajectory
     """
     rdir = get_resource_path()
     df = pd.read_csv(os.path.join(rdir, filename))

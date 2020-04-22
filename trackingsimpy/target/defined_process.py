@@ -1,9 +1,9 @@
-from trackingsimpy.target import GenericProcess
+from trackingsimpy.target import GenericTargetProcess
 
 
-class DefinedJMLSProcess(GenericProcess):
-    def __init__(self, x0, st_models, p_noises):
-        super(DefinedJMLSProcess, self).__init__(x0, None, None)
+class DefinedTargetProcess(GenericTargetProcess):
+    def __init__(self, x0, st_models, p_noises, order, dim):
+        super(DefinedTargetProcess, self).__init__(x0, None, None, order=order, dim=dim)
         self.st_models = st_models
         self.p_noises = p_noises
         self._idx = 0

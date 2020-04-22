@@ -1,16 +1,10 @@
 import numpy as np
 from trackingsimpy.common.motion_model import singer_process_covariance, singer_process_matrix
+from .generic_process import GenericTargetProcess
+from .base_target import BaseTarget
 
 
-class BaseTarget(object):
-    def reset(self):
-        raise NotImplementedError
-
-    def update(self):
-        raise NotImplementedError
-
-
-class SingerModel(BaseTarget):
+class SingerModel(GenericTargetProcess):
     def __init__(self, stdAcc, corrAcc, x0, dt):
         """One dimensional singer model.
 
@@ -18,9 +12,8 @@ class SingerModel(BaseTarget):
         :param corrAcc: Time constant of acceleration correlations (inverse of the actual time)
         :param x0:
         """
-        self.x0 = x0
-        self.x = None
-        self.reset()
+        super(SingerModel, self).__init__(x0, F=None, Q=None, order=2, dim=1)
+
         self.n = len(self.x)
         self.stdAcc = stdAcc
         self.corrAcc = corrAcc
@@ -28,12 +21,6 @@ class SingerModel(BaseTarget):
 
         self.F = singer_process_matrix(dt, self.corrAcc)
         self.Q = singer_process_covariance(dt, self.corrAcc, self.stdAcc)
-
-    def reset(self):
-        self.x = self.x0.reshape(-1, 1)
-
-    def update(self):
-        self.x = self.F @ self.x + np.random.multivariate_normal(np.zeros(3), self.Q).reshape(-1, 1)
 
 
 class SingerModelMD(BaseTarget):
@@ -45,11 +32,10 @@ class SingerModelMD(BaseTarget):
         :param x0: Initial state [x, x', x'', y, y', y'', etc.]
         :param dim: How many dimensions used
         """
+        super(SingerModelMD, self).__init__(order=2, dim=dim)
         self.models = [SingerModel(stdAcc, corrAcc, x0.flatten()[idx*3:(idx+1)*3], dt) for idx in range(dim)]
-        self.x = None
         self.reset()
 
-        self.n = len(self.x)
         self.stdAcc = stdAcc
         self.corrAcc = corrAcc
         self.dt = dt

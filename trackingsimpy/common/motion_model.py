@@ -1,4 +1,5 @@
 import numpy as np
+import filterpy.common
 
 
 def constant_turn_rate_matrix(w, dt):
@@ -24,13 +25,24 @@ def constant_turn_rate_matrix(w, dt):
     return F
 
 
-def constant_velocity_matrix(dt):
-    F = np.array([
-        [1, dt, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, dt],
-        [0, 0, 0, 1]
-    ])
+def acceleration_control_matrix(dt, dim):
+    """Acceleration matrix which can be used to control constant velocity process."""
+    order = 1
+    b = np.array([1/2*dt, dt])
+    B = np.zeros(shape=(2*dim, dim))
+    for idx in range(dim):
+        idx_low = idx * (order + 1)
+        idx_high = (idx + 1) * (order + 1)
+        B[idx_low:idx_high, idx] = b
+    return B
+
+
+def kinematic_state_transition(dt, order, dim):
+    F = np.zeros(((order+1)*dim,)*2)
+    for idx in range(dim):
+        idx_low = idx * (order+1)
+        idx_high = (idx+1) * (order+1)
+        F[idx_low:idx_high, idx_low:idx_high] = filterpy.common.kinematic_state_transition(order, dt)
     return F
 
 
@@ -48,4 +60,3 @@ def singer_process_covariance(dt, corr_acc, std_acc):
             [dt ** 4 / 8 , dt ** 3 / 3, dt ** 2 / 2],
             [dt ** 3 / 6 , dt ** 2 / 2, dt         ]
         ])
-

@@ -1,8 +1,11 @@
 import numpy as np
+from .base_target import BaseTarget
 
 
-class GenericProcess(object):
-    def __init__(self, x0, F, Q):
+class GenericTargetProcess(BaseTarget):
+    def __init__(self, x0, F, Q, order, dim):
+        super().__init__(order=order, dim=dim)
+
         self.x0 = x0.reshape(-1, 1)
         self.x = self.x0
         self.F = F
