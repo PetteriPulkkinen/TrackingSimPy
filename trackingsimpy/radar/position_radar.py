@@ -19,9 +19,9 @@ class PositionRadar(BaseRadar, Sensor):
         """
         if dim != 2:
             raise NotImplementedError
-        BaseRadar.__init__(target, dim, order)
+        BaseRadar.__init__(self, target, dim, order)
         H = position_measurement_matrix(self.dim, self.order)
-        Sensor.__init__(H, R=None)
+        Sensor.__init__(self, H, R=None)
 
         self.beamwidth = beamwidth
         self.sn0 = sn0

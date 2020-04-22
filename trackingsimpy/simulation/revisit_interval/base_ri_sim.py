@@ -15,7 +15,7 @@ class BaseRISimulation(object):
 
     def step(self, revisit_interval):
         for _ in range(revisit_interval):
-            self.tracker_computer.predict()
+            self.computer.predict()
             trajectory_ends = self.target.trajectory_ends()
             if not trajectory_ends:
                 self.target.update()

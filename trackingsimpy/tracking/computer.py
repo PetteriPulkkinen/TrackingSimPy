@@ -11,7 +11,7 @@ class TrackingComputer(object):
     """This class combines all objects needed to propagate number of cycles to achieve
     one update step. At the moment only single target scenarios are considered.
     """
-    def __init__(self, tracker, radar, n_max, alpha):
+    def __init__(self, tracker, radar, n_max, alpha=0.998, x0=None, P0=None):
         """
         Args:
             tracker: FilterPy style tracker filter
@@ -19,6 +19,8 @@ class TrackingComputer(object):
             n_max: Number of subsequent illuminations until track is considered lost
             alpha: Discount factor for past observations [0, 1)
         """
+        self.P0 = P0
+        self.x0 = x0
         self.tracker = tracker
         self.radar = radar
         self.n_max = n_max
@@ -33,13 +35,19 @@ class TrackingComputer(object):
         self.snr = None  # last snr
         self.current_time = 0
 
-    def initialize(self, x0, P0):
+    def initialize(self, x0=None, P0=None):
         """Initialize tracking computer before starting the tracking task.
 
         Args:
             x0: Initial state estimate
             P0: Initial covariance estimate
         """
+        if x0 is None:
+            x0 = self.x0
+
+        if P0 is None:
+            P0 = self.P0
+
         # reset radar here?
         self.current_time = 0
         self.snr = self.radar.sn0
