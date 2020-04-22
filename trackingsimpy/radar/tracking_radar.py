@@ -1,8 +1,7 @@
 from .generic_sensor import Sensor
-from trackingsimpy.common.measurement_model import position_measurement_matrix
-from .radar_2d import angle_in_2D, angle_error_in_2D, measurement_covariance_matrix
-from .radar_2d import radial_std, snr_with_beam_losses, detection_probability
-from .radar_2d import angular_std
+from trackingsimpy.common.measurement_model import position_measurement_matrix, meas_acovmat_2D
+from trackingsimpy.common.trigonometrics import angle_in_2D, angle_error_in_2D
+from .radar_tools import detection_probability, radial_std, snr_with_beam_losses, angular_std
 import numpy as np
 
 
@@ -58,7 +57,7 @@ class TrackingRadar(Sensor):
 
         distance = np.linalg.norm(pos)
 
-        R = measurement_covariance_matrix(
+        R = meas_acovmat_2D(
             distance, radial_std(snr), angular_std(snr), angle)
 
         z = super().measure(self.target.x, R=R)

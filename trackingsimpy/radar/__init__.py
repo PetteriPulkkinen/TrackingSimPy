@@ -1,3 +1,3 @@
-from .radar_2d import Radar2D, measurement_covariance_matrix
-from .generic_sensor import Sensor, basic_measurement_matrix
+from ..common.measurement_model import meas_acovmat_2D
+from .generic_sensor import Sensor
 from .tracking_radar import TrackingRadar

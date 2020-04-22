@@ -80,3 +80,10 @@ def pos_to_radius_error_2D(pos1, pos2):
     r2 = pos_to_radius_2D(pos2)
 
     return np.abs(r1-r2)
+
+
+def rotmat_2D(theta):
+    return np.array([
+        [np.cos(theta), - np.sin(theta)],
+        [np.sin(theta), np.cos(theta)]
+    ])
