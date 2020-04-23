@@ -7,8 +7,7 @@ class BaselineKalman(Baseline):
     DIM = 2
     DT = 0.01
 
-    def __init__(self, k_min=1, k_max=100, n_max=20, var=10, traj_idx=0, P0=None, beamwidth=0.02, pfa=1e-6, sn0=50,
-                 save=False):
+    def __init__(self, k_min=1, k_max=100, n_max=20, var=10, traj_idx=0, P0=None, beamwidth=0.02, pfa=1e-6, sn0=50):
         tracker = filterpy.common.kinematic_kf(self.DIM, self.ORDER, self.DT)
         tracker.Q = filterpy.common.Q_discrete_white_noise(self.DIM, self.DT, var=var, block_size=self.ORDER+1)
         super().__init__(
@@ -20,6 +19,5 @@ class BaselineKalman(Baseline):
             P0=P0,
             beamwidth=beamwidth,
             pfa=pfa,
-            sn0=sn0,
-            save=save
+            sn0=sn0
         )

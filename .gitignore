@@ -5,3 +5,4 @@ RadarSimulator.egg-info/*
 **/.ipynb_checkpoints/**
 figs/*
 .vscode/*
+trackingsimpy.egg-info/*
