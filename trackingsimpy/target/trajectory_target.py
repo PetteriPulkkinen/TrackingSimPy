@@ -22,3 +22,7 @@ class TrajectoryTarget(BaseTarget):
     def trajectory_ends(self):
         return self.current_idx + 1 >= self.length
 
+    def get_positions(self):
+        idxs = [i*(self.order+1) for i in range(self.dim)]
+        return self.trajectory[:, idxs]
+

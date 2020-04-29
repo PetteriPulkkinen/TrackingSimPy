@@ -6,3 +6,6 @@ class BaseRadar(object):
 
     def illuminate(self, prediction):
         raise NotImplementedError
+
+    def set_target(self, target):
+        self.target = target

@@ -51,9 +51,9 @@ class TrackingComputer(object):
         # reset radar here?
         self.current_time = 0
         self.snr = self.radar.sn0
-        self.y = np.zeros(self.tracker.H.shape[0])
+        self.y = np.zeros(self.radar.H.shape[0])
         self.R_est = None
-        self.yn_smoothed = self.tracker.H @ x0
+        self.yn_smoothed = self.radar.H @ x0
 
         # A little bit of dirty hack because IMMEstimator works differently than Kalman filter
         if type(self.tracker) == IMMEstimator:
@@ -99,13 +99,18 @@ class TrackingComputer(object):
 
         if detection_occurred:
             # Calculate Innovation
-            self.y = self.z.flatten() - self.tracker.H @ self.tracker.x_prior.flatten()
+            self.y = self.z.flatten() - self.radar.H @ self.tracker.x_prior.flatten()
 
             # Calculate normalized innovation
             self.yn = normalize_innovation(self.y, R=self.R_est)
             self.yn_smoothed = (1 - self._discount) * self.yn + self._discount * self.yn_smoothed
             # Update tracker using the measurement
-            self.tracker.update(self.z, R=self.R_est)
+            if type(self.tracker) == IMMEstimator:
+                for filt in self.tracker.filters:
+                    filt.R = self.R_est
+                    self.tracker.update(self.z)
+            else:
+                self.tracker.update(self.z, R=self.R_est)
             self._reset_cycle()
 
         self.n_missed = n_missed

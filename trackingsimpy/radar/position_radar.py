@@ -8,7 +8,7 @@ import numpy as np
 
 class PositionRadar(BaseRadar, Sensor):
     """Class intended to be used in a single target tracking scenarios."""
-    def __init__(self, target, sn0, pfa, beamwidth, dim, order):
+    def __init__(self, target, sn0, pfa, beamwidth, dim, order, enable_prob_detection=True):
         """
         Args:
             target: Target to be tracked
@@ -16,6 +16,7 @@ class PositionRadar(BaseRadar, Sensor):
             pfa: Probability of false alarm
             beamwidth: Main lobe -3dB beamwidth in radians
             order: State order (order 0 := position, order 1 := velocity, order 2:= acceleration)
+            enable_prob_detection: Whether to enable the probability for missed detections
         """
         if dim != 2:
             raise NotImplementedError
@@ -26,6 +27,7 @@ class PositionRadar(BaseRadar, Sensor):
         self.beamwidth = beamwidth
         self.sn0 = sn0
         self.pfa = pfa
+        self.detection_prob_enabled = enable_prob_detection
 
         # real-time operation parameters
         self.angle_error = None
@@ -48,7 +50,7 @@ class PositionRadar(BaseRadar, Sensor):
         detection_occurred = bool(np.random.binomial(n=1, p=pd))
 
         # No detection occurred, so the radar returns without measurement
-        if not detection_occurred:
+        if not detection_occurred and self.detection_prob_enabled:
             return (detection_occurred,
                     np.ones(self.H.shape[0])*np.inf,
                     np.ones((self.H.shape[0],)*2)*np.inf,

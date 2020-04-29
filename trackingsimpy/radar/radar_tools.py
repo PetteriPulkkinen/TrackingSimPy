@@ -15,7 +15,7 @@ def radar_snr(power, transmitter_gain, receiver_gain, wavelength, rcs, noise, di
 
 
 def snr_with_beam_losses(SN0, angular_error, beamwidth):
-    return SN0 * np.exp(-2 * angular_error**2 / (beamwidth**2))
+    return SN0 * np.exp(-np.log(2) * angular_error**2 / (beamwidth**2))
 
 
 def angular_std(snr):
