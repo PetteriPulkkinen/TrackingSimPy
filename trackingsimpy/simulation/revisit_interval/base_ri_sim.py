@@ -5,7 +5,7 @@ from matplotlib.animation import FuncAnimation
 
 
 class BaseRISimulation(object):
-    def __init__(self, computer: TrackingComputer, saver_ds=None):
+    def __init__(self, computer: TrackingComputer):
         self.target = computer.radar.target
         self.radar = computer.radar
         self.tracker = computer.tracker
@@ -14,9 +14,9 @@ class BaseRISimulation(object):
 
         saver_ds = {
             self.target: "x",
-            self.radar: "angle_error",
+            self.radar: ["angle_error", "angle_std"],
             self.tracker: "x_prior",
-            computer: ["y", "current_time", "z", "yn", "snr"]
+            computer: ["y", "theta", "theta_smoothed", "current_time", "z", "yn", "snr"]
         }
 
         if saver_ds is not None:

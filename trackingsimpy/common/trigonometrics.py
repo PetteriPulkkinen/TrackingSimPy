@@ -2,37 +2,32 @@ import numpy as np
 
 
 def angle_in_2D(x, y):
-    """Calculate 2D angle in radians from x-axis [0, 2*pi].
+    """Calculate 2D angle in radians from x-axis [-pi, pi].
 
     Args:
         x: x-coordinate
         y: y-coordinate
     """
-    if x >= 0 and y >= 0:  # 1st quadrant
-        return np.arctan2(y, x)
-    elif x < 0 and y >= 0:  # 2nd quadrant
-        return np.pi/2 + np.arctan2(np.abs(x), np.abs(y))
-    elif x < 0 and y < 0:  # 3rd quadrant
-        return np.pi + np.arctan2(np.abs(y), np.abs(x))
-    else:  # 4th quadrant
-        return 3/2*np.pi + np.arctan2(np.abs(x), np.abs(y))
+    return np.arctan2(y, x)
 
 
 def angle_error_in_2D(alpha, beta):
-    """Calculate minimum 2D angle in radians e.g. (pi/4, 7/4 pi) -> pi/4
+    """Calculate angle error in radians between [-pi, pi]
 
     alpha: first angle
     beta: second angle
     """
-    assert(alpha < 2*np.pi)
-    assert(beta < 2*np.pi)
+    assert(-np.pi <= alpha <= np.pi)
+    assert(-np.pi <= alpha <= np.pi)
 
-    error_init = np.abs(alpha - beta)
+    error_init = beta - alpha
 
-    if error_init <= np.pi:
-        return error_init
+    if error_init > np.pi:
+        return error_init - 2*np.pi
+    elif error_init < -np.pi:
+        return error_init + 2*np.pi
     else:
-        return 2*np.pi - np.max([alpha, beta]) + np.min([alpha, beta])
+        return error_init
 
 
 def pos_to_angle_2D(pos):
@@ -70,16 +65,16 @@ def pos_to_angle_error_2D(pos1, pos2):
 
 
 def pos_to_radius_error_2D(pos1, pos2):
-    """Calculate angle error straight from the position tuples.
+    """Calculate radius error straight from the position tuples.
 
     :param pos1: Tuple of x and y coordinates
     :param pos2: Tuple of x and y coordinates.
-    :return: angle error in a floating point number
+    :return: radius error as a floating point number
     """
     r1 = pos_to_radius_2D(pos1)
     r2 = pos_to_radius_2D(pos2)
 
-    return np.abs(r1-r2)
+    return r1-r2
 
 
 def rotmat_2D(theta):

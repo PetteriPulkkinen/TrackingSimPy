@@ -3,10 +3,8 @@ from trackingsimpy.radar import PositionRadar
 from trackingsimpy.target import TrajectoryTarget
 from trackingsimpy.tracking import TrackingComputer
 from trackingsimpy.trajectories import get_file_list, load_trajectory
-from matplotlib.animation import FuncAnimation
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 class Baseline(BaseRISimulation):
@@ -23,13 +21,6 @@ class Baseline(BaseRISimulation):
         radar = PositionRadar(target, sn0, pfa, beamwidth, self.DIM, self.ORDER)
         computer = TrackingComputer(tracker, radar, n_max=n_max, P0=P0)
 
-        saver_ds = {
-            target: "x",
-            radar: "angle_error",
-            tracker: "x_prior",
-            computer: ["y", "current_time", "z", "yn", "snr"]
-        }
-
-        super().__init__(computer=computer, saver_ds=saver_ds)
+        super().__init__(computer=computer)
 
 

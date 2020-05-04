@@ -1,5 +1,6 @@
 from filterpy.kalman import IMMEstimator
 import numpy as np
+from trackingsimpy.common.trigonometrics import pos_to_angle_error_2D
 
 
 def normalize_innovation(y, R):
@@ -28,6 +29,8 @@ class TrackingComputer(object):
         self._discount = 1
         self.z = None  # last measurement
         self.y = None  # last innovation
+        self.theta = None  # last angle error measurement
+        self.theta_smoothed = None  # last smoothed angle error
         self.yn = None  # last normalized innovation
         self.yn_smoothed = None  # smoothed normalized innovations
         self.R_est = None  # last estimated measurement matrix
@@ -54,6 +57,8 @@ class TrackingComputer(object):
         self.y = np.zeros(self.radar.H.shape[0])
         self.R_est = None
         self.yn_smoothed = self.radar.H @ x0
+        self.theta_smoothed = 0
+        self.theta = 0
 
         # A little bit of dirty hack because IMMEstimator works differently than Kalman filter
         if type(self.tracker) == IMMEstimator:
@@ -99,7 +104,13 @@ class TrackingComputer(object):
 
         if detection_occurred:
             # Calculate Innovation
-            self.y = self.z.flatten() - self.radar.H @ self.tracker.x_prior.flatten()
+            pos_est = self.radar.H @ self.tracker.x_prior.flatten()
+            pos_meas = self.z.flatten()
+            self.y = pos_meas - pos_est
+
+            # Calculate absolute value of innovation in angle
+            self.theta = pos_to_angle_error_2D(pos_meas, pos_est)
+            self.theta_smoothed = 0.9*self.theta_smoothed + 0.1*self.theta
 
             # Calculate normalized innovation
             self.yn = normalize_innovation(self.y, R=self.R_est)

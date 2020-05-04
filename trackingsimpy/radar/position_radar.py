@@ -31,6 +31,7 @@ class PositionRadar(BaseRadar, Sensor):
 
         # real-time operation parameters
         self.angle_error = None
+        self.angle_std = None
 
     def illuminate(self, prediction):
         """
@@ -59,8 +60,10 @@ class PositionRadar(BaseRadar, Sensor):
         distance = np.linalg.norm(pos)
 
         angle = angle_in_2D(pos[0], pos[1])
+        self.angle_std = angular_std(snr)
+
         R = meas_acovmat_2D(
-            distance, radial_std(snr), angular_std(snr), angle)
+            distance, radial_std(snr), self.angle_std, angle)
 
         z = self.measure(self.target.x, R=R)
         return detection_occurred, z, R, snr

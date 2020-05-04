@@ -51,11 +51,4 @@ class DefinedIMM(BaseRISimulation):
         radar = PositionRadar(target, sn0, pfa, beamwidth, self.DIM, self.ORDER)
         computer = TrackingComputer(tracker, radar, n_max, P0=P0)
 
-        saver_ds = {
-            target: "x",
-            radar: "angle_error",
-            tracker: ["x_prior", "mu"],
-            computer: ["y", "current_time", "z", "yn", "snr"]
-        }
-
-        super().__init__(computer, saver_ds)
+        super().__init__(computer)
