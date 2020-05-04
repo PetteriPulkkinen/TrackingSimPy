@@ -1,6 +1,7 @@
-import os
-import pandas as pd
 import numpy as np
+import pandas as pd
+import requests
+from bs4 import BeautifulSoup
 
 
 def preprocess_trajectory_data(trajectory, dim, order):
@@ -11,12 +12,15 @@ def preprocess_trajectory_data(trajectory, dim, order):
 
 
 def get_resource_path():
-    cdir = os.path.dirname(__file__)
-    return os.path.join(cdir, 'resources')
+    return r"https://raw.githubusercontent.com/PetteriPulkkinen/TrackingSimPy/master/trackingsimpy/trajectories" \
+           r"/resources/"
 
 
 def get_file_list():
-    files = os.listdir(get_resource_path())
+    resp = requests.get(r'https://github.com/PetteriPulkkinen/TrackingSimPy/tree/master/trackingsimpy/trajectories'
+                        r'/resources')
+    soup = BeautifulSoup(resp.content, features="html.parser")
+    files = [item.text.strip() for item in soup.select("tbody td.content span a")]
     return files
 
 
@@ -28,8 +32,8 @@ def load_trajectory(filename, order, dim=None):
     :param order: Desired order for the state variable
     :dim dim: Desired dimension for the trajectory
     """
-    rdir = get_resource_path()
-    df = pd.read_csv(os.path.join(rdir, filename))
+    resource_url = get_resource_path()
+    df = pd.read_csv(resource_url + filename)
     trajectory = df.to_numpy()
     if dim is None:
         dim = trajectory.shape[1]
