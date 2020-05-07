@@ -12,25 +12,20 @@ class DefinedTargetProcess(GenericTargetProcess):
         :param order:
         :param dim:
         """
-        super(DefinedTargetProcess, self).__init__(x0, None, None, order=order, dim=dim)
+        super(DefinedTargetProcess, self).__init__(x0, list(st_models.values())[0], list(p_noises.values())[0],
+                                                   max_steps, order=order, dim=dim)
         self.st_models = st_models
         self.p_noises = p_noises
-        self._idx = 0
         self.max_steps = max_steps
 
-    def reset(self):
-        super().reset()
-        self._idx = 0
-        self.F = None
-        self.Q = None
-
     def update(self):
-        self.F = self.st_models.get(self._idx, self.F)
-        self.Q = self.p_noises.get(self._idx, self.Q)
-        self._idx += 1
+        F = self.st_models.get(self._idx)
+        Q = self.p_noises.get(self._idx)
+
+        if F is not None:
+            self.F = F
+        if Q is not None:
+            self.Q = Q
+
         return super().update()
-
-    def trajectory_ends(self):
-        return self._idx >= self.max_steps
-
 

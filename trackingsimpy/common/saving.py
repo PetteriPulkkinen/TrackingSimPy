@@ -33,3 +33,36 @@ class Saver(object):
                 yield key, value
             else:
                 raise RuntimeError("Data type not understood! Check the data structure of the saver.")
+
+
+class Snapshot(object):
+    def __init__(self, saver, snapshot_ds):
+        self.structure = snapshot_ds
+        self.saver = saver
+        self.storage = dict()
+        self.reset()
+
+    def reset(self):
+        for key, value in self._iterate_structure():
+            if key not in self.storage:
+                self.storage[key] = dict()
+            self.storage[key][value] = list()
+
+    def snapshot(self):
+        self.saver.convert_to_numpy()
+        for obj, attr in self._iterate_structure():
+            self.storage[obj][attr].append(self.saver[obj][attr])
+
+    def convert_to_numpy(self):
+        for (key, value) in self._iterate_structure():
+            self.storage[key][value] = np.array(self.storage[key][value])
+
+    def _iterate_structure(self):
+        for (key, value) in self.structure.items():
+            if isinstance(value, (list, tuple)):
+                for attrib in value:
+                    yield key, attrib
+            elif isinstance(value, str):
+                yield key, value
+            else:
+                raise RuntimeError("Data type not understood! Check the data structure of the saver.")

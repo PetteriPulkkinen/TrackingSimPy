@@ -63,11 +63,14 @@ class TrackingComputer(object):
         # A little bit of dirty hack because IMMEstimator works differently than Kalman filter
         if type(self.tracker) == IMMEstimator:
             for filt in self.tracker.filters:
-                filt.x = x0
-                filt.P = P0
+                filt.x = x0.copy()
+                filt.P = P0.copy()
+            self.tracker.x = x0.copy()
+            self.tracker.P = P0.copy()
+            self.tracker.mu = np.ones(shape=len(self.tracker.filters))/len(self.tracker.filters)
         else:
-            self.tracker.x = x0
-            self.tracker.P = P0
+            self.tracker.x = x0.copy()
+            self.tracker.P = P0.copy()
 
         self._reset_cycle()
 

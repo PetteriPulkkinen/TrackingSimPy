@@ -19,4 +19,4 @@ def snr_with_beam_losses(SN0, angular_error, beamwidth):
 
 
 def angular_std(snr):
-    return 2.18e-2*np.sqrt(1 / np.sqrt(snr))
+    return 0.54e-2*np.sqrt(1 / np.sqrt(snr))
