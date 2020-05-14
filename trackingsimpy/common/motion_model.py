@@ -1,8 +1,6 @@
 import numpy as np
 import filterpy.common
 
-np.seterr('raise')
-
 
 def constant_turn_rate_matrix(w, dt, dim=2, order=1):
     assert (dim == 2)
