@@ -49,14 +49,14 @@ class IMMBenchmark(BaseRISimulation):
 
         target = load_benchmark_target(traj_idx, self.ORDER, self.DIM, skip_k=10)
 
-        sn0 = 50
+        sn0 = 50.0
         pfa = 1e-6
         beamwidth = 0.02
 
         radar = PositionRadar(target, sn0, pfa, beamwidth, self.DIM, self.ORDER)
 
         n_max = 20
-        P0 = np.diag([0, 500e3, 10e3, 0, 500e3, 10e3])
+        P0 = np.zeros((6, 6), dtype=float)
         target.reset()
         x0 = target.x
 
