@@ -10,6 +10,6 @@ setup(name='trackingsimpy',
       licence='MIT',
       packages=find_namespace_packages(),
       install_requires=[
-            'numpy', 'filterpy', 'matplotlib', 'pandas', 'requests', 'bs4'
+            'numpy', 'filterpy', 'matplotlib', 'pandas', 'requests', 'bs4', 'scipy'
       ],
       zip_safe=False)

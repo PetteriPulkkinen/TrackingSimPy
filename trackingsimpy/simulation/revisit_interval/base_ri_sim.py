@@ -9,6 +9,8 @@ import numpy as np
 
 
 class BaseRISimulation(object):
+    G = 9.81
+
     def __init__(self, computer: TrackingComputer):
         self.target = computer.radar.target
         self.radar = computer.radar
@@ -148,10 +150,11 @@ class BaseRISimulation(object):
         pos = self.saver_fts[self.target]['x'][:, ::self.order + 1]
         pos_pred = self.saver_fts[self.tracker]['x_prior'][:, ::self.order + 1]
 
-        error = [pos_to_angle_error_2D(pos1, pos2) for pos1, pos2 in zip(pos, pos_pred)]
-        plt.plot(error)
+        error = np.array([pos_to_angle_error_2D(pos1, pos2) for pos1, pos2 in zip(pos, pos_pred)])
+        plt.plot(error/self.radar.beamwidth)
         plt.xlabel('Step')
-        plt.ylabel('Error [rad]')
+        plt.ylabel('Relative error')
+        plt.title('Angle prediction error relative to beamwidth')
         plt.grid(True)
         plt.show()
 

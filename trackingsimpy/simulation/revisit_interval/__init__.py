@@ -4,3 +4,4 @@ from .baseline_kalman import BaselineKalman, BenchmarkWithKalmanFilter
 from .defined_imm import DefinedIMM
 from .defined_kalman import DefinedKalman
 from .defined_imm import DefinedCVCAIMM
+from .imm_benchmark import IMMBenchmark
