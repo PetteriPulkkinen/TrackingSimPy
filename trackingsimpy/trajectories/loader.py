@@ -5,10 +5,7 @@ from bs4 import BeautifulSoup
 
 
 def preprocess_trajectory_data(trajectory, dim, order):
-    traj_trunc = trajectory[:, :dim]  # get the data up to desired dimension
-    states = np.zeros((traj_trunc.shape[0], traj_trunc.shape[1] * (order+1)))  # Add additional dims based on the order
-    states[:, ::(order+1)] = traj_trunc
-    return states
+    return np.hstack([trajectory[:, i:(order+1)*3:3] for i in range(dim)])
 
 
 def get_resource_path():
@@ -25,11 +22,11 @@ def get_file_list():
 
 
 def load_trajectory(filename, order, dim=None):
-    """Loads target trajectory from a given file. Works only for position trajectories.
+    """Loads target trajectory from GitHub repository.
 
-    :param dim: Dimension to be used from the trajectory file
+    :param dim: Dimension to be used from the trajectory file (max. 3D)
     :param filename: The trajectory file to be loaded from the resource folder
-    :param order: Desired order for the state variable
+    :param order: Desired order for the state variable (max. 2)
     :dim dim: Desired dimension for the trajectory
     """
     resource_url = get_resource_path()
