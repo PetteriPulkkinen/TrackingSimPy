@@ -42,6 +42,9 @@ class Snapshot(object):
         self.storage = dict()
         self.reset()
 
+    def __getitem__(self, item):
+        return self.storage[item]
+
     def reset(self):
         for key, value in self._iterate_structure():
             if key not in self.storage:

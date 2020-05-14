@@ -187,8 +187,8 @@ class BaseRISimulation(object):
         upd_time_rep = np.zeros(upd_time.size * 2)
         upd_time_rep[1:] = np.repeat(upd_time, 2)[:-1]
 
-        plt.plot(upd_time_rep, ri_rep)
-        plt.xlabel('Step')
+        plt.plot(upd_time_rep*self.DT, ri_rep*self.DT)
+        plt.xlabel('Time [s]')
         plt.ylabel('Revisit interval [s]')
         plt.grid(True)
         plt.show()

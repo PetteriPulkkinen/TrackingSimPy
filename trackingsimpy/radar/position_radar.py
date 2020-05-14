@@ -8,7 +8,7 @@ import numpy as np
 
 class PositionRadar(BaseRadar, Sensor):
     """Class intended to be used in a single target tracking scenarios."""
-    def __init__(self, target, sn0, pfa, beamwidth, dim, order, enable_prob_detection=True):
+    def __init__(self, target, sn0, pfa, beamwidth, dim, order, enable_prob_detection=True, angle_accuracy=0.002):
         """
         Args:
             target: Target to be tracked
@@ -17,6 +17,7 @@ class PositionRadar(BaseRadar, Sensor):
             beamwidth: Main lobe -3dB beamwidth in radians
             order: State order (order 0 := position, order 1 := velocity, order 2:= acceleration)
             enable_prob_detection: Whether to enable the probability for missed detections
+            angle_accuracy: The standard deviation (rad) of the angle measurements (based on reference SNR=sn0 [linear])
         """
         if dim != 2:
             raise NotImplementedError
@@ -28,6 +29,7 @@ class PositionRadar(BaseRadar, Sensor):
         self.sn0 = sn0
         self.pfa = pfa
         self.detection_prob_enabled = enable_prob_detection
+        self.a_theta = np.sqrt(self.sn0)*angle_accuracy
 
         # real-time operation parameters
         self.angle_error = None
@@ -60,7 +62,7 @@ class PositionRadar(BaseRadar, Sensor):
         distance = np.linalg.norm(pos)
 
         angle = angle_in_2D(pos[0], pos[1])
-        self.angle_std = angular_std(snr)
+        self.angle_std = angular_std(snr, self.a_theta)
 
         R = meas_acovmat_2D(
             distance, radial_std(snr), self.angle_std, angle)

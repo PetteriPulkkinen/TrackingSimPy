@@ -1,70 +1,53 @@
 import numpy as np
+from trackingsimpy.tracking.computer import TrackingComputer
+from trackingsimpy.common.trigonometrics import angular_uncertainty_2D
+import copy
 
 
 class BaseUpdatePolicy(object):
     def __init__(self):
-        self._K = 1
-        self._counter = 0
-
-    def is_revisit(self):
-        return (self._counter % self._K) == 0
-
-    def update(self, tracker, measurement):
-        raise NotImplementedError
-
-    def roll_forward(self):
-        self._counter += 1
+        pass
 
     def get_revisit_interval(self):
-        return self._K
-
-    def reset(self):
-        self._counter = 0
+        raise NotImplementedError
 
 
 class RandomUpdatePolicy(BaseUpdatePolicy):
     def __init__(self, intervals):
-        super(RandomUpdatePolicy, self).__init__()
+        super().__init__()
         self.intervals = intervals
-        self.update(None, None)
 
-    def update(self, tracker, measurement):
-        self._K = np.random.choice(self.intervals)
-        
-    def reset(self):
-        super().reset()
-        self.update(None, None)
-    
-    
+    def get_revisit_interval(self):
+        return np.random.choice(self.intervals)
+
+
 class ConstantUpdatePolicy(BaseUpdatePolicy):
     def __init__(self, interval):
-        super(ConstantUpdatePolicy, self).__init__()
+        super().__init__()
         self.interval = interval
-        self.update(None, None)
-        
-    def update(self, tracker, measurement):
-        self._K = self.interval
 
-    def reset(self):
-        super().reset()
-        self.update(None, None)
+    def get_revisit_interval(self):
+        return self.interval
 
 
-class ResidualUpdatePolicy(BaseUpdatePolicy):
-    def __init__(self, v0=1, K_max=10, K_min=1):
-        super(ResidualUpdatePolicy, self).__init__()
-        self.v0 = v0
-        self.K_max = K_max
-        self.K_min = K_min
+class CovarianceBasedPolicy(BaseUpdatePolicy):
+    def __init__(self, computer: TrackingComputer, v0, ri_min, ri_max):
+        super().__init__()
+        self.computer = computer
+        self.ri_min = ri_min
+        self.ri_max = ri_max
+        self.v0 = v0  # threshold angular uncertainty
+        self.order = computer.radar.target.order
 
-    def update(self, tracker, measurement):
-        est_pos = (measurement.H @ tracker.x).flatten()
-        distance = np.linalg.norm(est_pos - measurement.z.flatten())
-        w, _ = np.linalg.eig(measurement.R_est)
-        sig_th = np.sqrt(np.max(w))
-        self._K = np.max([self.K_min, np.round(self._K*np.power(self.v0*sig_th/distance, 1/3))])
-        self._K = np.min([self._K, self.K_max])
+    def get_revisit_interval(self):
+        tracker = copy.deepcopy(self.computer.tracker)
+        ri = 0
+        for _ in range(self.ri_max):
+            tracker.predict()
+            ri += 1
+            angle_std = angular_uncertainty_2D(tracker.x, tracker.P, self.order)
+            if angle_std > self.v0 * self.computer.radar.beamwidth:
+                ri -= 1
+                break
 
-    def reset(self):
-        super().reset()
-        self._K = 1
+        return np.max([self.ri_min, ri])

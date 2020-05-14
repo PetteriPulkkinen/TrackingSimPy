@@ -82,3 +82,22 @@ def rotmat_2D(theta):
         [np.cos(theta), - np.sin(theta)],
         [np.sin(theta), np.cos(theta)]
     ])
+
+
+def angular_uncertainty_2D(x, P, order):
+    """Calculate standard deviation in angle coordinate from state estimate and covariance matrix provided in
+    Cartesian coordinate system.
+
+    :param x: Kinematic state estimate
+    :param P: Covariance of the state estimate
+    :param order: Order of the state estimate
+    :return: Covariance in angle coordinates
+    """
+    pos = x[::order+1]
+    angle = pos_to_angle_2D(pos)
+    radius = pos_to_radius_2D(pos)
+    X = P[::order+1, ::order+1]
+    assert(X.shape == (2, 2))
+    P_polar = rotmat_2D(-angle) @ X @ rotmat_2D(-angle).T
+    return np.sqrt(P_polar[1, 1]) / radius
+

@@ -1,4 +1,11 @@
 from .base_target import BaseTarget
+from trackingsimpy.trajectories import load_trajectory, get_file_list
+
+
+def load_benchmark_target(traj_idx, order, dim, skip_k=None):
+    files = get_file_list()
+    traj = load_trajectory(files[traj_idx], order, dim)
+    return TrajectoryTarget(traj[::skip_k], order, dim)
 
 
 class TrajectoryTarget(BaseTarget):

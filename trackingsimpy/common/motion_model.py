@@ -1,41 +1,71 @@
 import numpy as np
 import filterpy.common
 
+np.seterr('raise')
+
 
 def constant_turn_rate_matrix(w, dt, dim=2, order=1):
     assert (dim == 2)
     assert (order == 1)
 
-    F = np.array([
-        [1, np.sin(w * dt) / w, 0, (np.cos(w * dt) - 1) / w],
-        [0, np.cos(w * dt), 0, -np.sin(w * dt)],
-        [0, (1 - np.cos(w * dt)) / w, 1, np.sin(w * dt) / w],
-        [0, np.sin(w * dt), 0, np.cos(w * dt)]
-    ])
+    WT = w * dt
+    SWT = np.sin(WT)
+    CWT = np.cos(WT)
+
+    if w > 1e-6:
+        F = np.array([
+            [1, SWT / w, 0, (CWT - 1) / w],
+            [0, CWT, 0, -SWT],
+            [0, (1 - CWT) / w, 1, SWT / w],
+            [0, SWT, 0, CWT]
+        ])
+    else:
+        F = np.array([
+            [1, dt, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, dt],
+            [0, 0, 0, 1],
+        ])
     return F
 
 
-"""
-def constant_turn_rate_covariance(w, dt, dim=2, order=1):
-    assert dim == 2
-    assert order == 1
+def const_turn_jac(x, dt):
+    W = x[-1]
+    WT = W*dt
+    CWT = np.cos(WT)
+    SWT = np.sin(WT)
+    x_ = x[1]
+    y_ = x[3]
+    f25 = (-x_ * SWT - y_ * CWT) * dt
+    f45 = (x_ * CWT - y_ * SWT) * dt
 
-    sigma_y = 1
-    sigma_x = 1
-    q1 = np.array({
-        (3 * w * dt - 4 * np.sin(w * dt) + 1 / 2 * np.sin(2 * w * dt)) * sigma_y ** 2 /
-        (2 * w ** 3) + (w * dt - 1 / 2 * np.sin(2 * w * dt)) * sigma_x ** 2 / (2 * w ** 3),
-        # ------
-        -(2 * np.cos(w * dt) - 1 - np.cos(w * dt) ** 2) * sigma_y ** 2 / (2 * w ** 2) + np.sin(
-            w * dt) ** 2 * sigma_x ** 2 / (2 * w ** 2),
-        # ------
-        (2 * np.cos(w * dt) - 1 - np.cos(w * dt) ** 2) * sigma_y ** 2 / (2 * w ** 2)
+    if W > 1e-6:
+        f15 = ((WT * CWT - SWT) * x_ + (1 - CWT - WT * SWT) * y_) / (W ** 2)
+        f35 = (WT * (x_ * SWT + y_ * CWT) - (x_ * (1 - CWT) + y_ * SWT)) / (W ** 2)
+        F = np.array([
+            [1, SWT/W, 0, -(1-CWT)/W, f15],
+            [0, CWT, 0, -SWT, f25],
+            [0, (1-CWT)/W, 1, SWT/W, f35],
+            [0, SWT, 0, CWT, f45],
+            [0, 0, 0, 0, 1]
+        ])
+    else:
+        F = np.array([
+            [1, dt, 0, 0, 0],
+            [0, 1, 0, 0, f25],
+            [0, 0, 1, dt, 0],
+            [0, 0, 0, 1, f45],
+            [0, 0, 0, 0, 1]
+        ])
+    return F
 
-    })
 
-    Q = np.zeros(shape=(4, 4))
-    return Q
-"""
+def const_turn(x, dt):
+    W = x[-1]
+    _x = x[:-1]
+    F = constant_turn_rate_matrix(W, dt)
+    _x = F @ _x
+    return np.append(_x, W)
 
 
 def acceleration_control_matrix(dt, dim):
