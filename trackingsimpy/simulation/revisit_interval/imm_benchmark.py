@@ -22,8 +22,11 @@ class IMMBenchmark(BaseRISimulation):
         G = np.array([[1/2*self.DT**2, self.DT, 1]]).T
         A = G @ G.T
 
-        Q_ca = block_diag(A, A) * 1e-1
-        Q_cv = Q_ca.copy() * 1e-6
+        var_cv = 737.4553075777116
+        var_ca = 73.69486570796552
+
+        Q_ca = block_diag(A, A) * var_ca
+        Q_cv = block_diag(A, A) * var_cv
         Q_cv[:, 2::3] = 0
         Q_cv[2::3, :] = 0
 
@@ -39,7 +42,7 @@ class IMMBenchmark(BaseRISimulation):
 
         filters = [kf_cv, kf_ca]
         mu = [0.5, 0.5]
-        p_switch = 0.001
+        p_switch = 0.02803952987536741
         M = np.array([
             [1 - p_switch, p_switch],
             [p_switch, 1 - p_switch]
