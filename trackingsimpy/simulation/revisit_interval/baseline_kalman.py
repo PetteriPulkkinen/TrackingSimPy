@@ -7,16 +7,19 @@ from trackingsimpy.tracking import TrackingComputer
 from trackingsimpy.target import TrajectoryTarget
 import filterpy.common
 import numpy as np
+from scipy.linalg import block_diag
 
 
 class BaselineKalman(Baseline):
-    ORDER = 1
-    DIM = 2
-    DT = 0.01
 
-    def __init__(self, n_max=20, var=10, traj_idx=0, P0=None, beamwidth=0.02, pfa=1e-6, sn0=50, theta_accuracy=0.002):
+    def __init__(self, n_max=20, var=10, traj_idx=0, P0=None, beamwidth=0.02, pfa=1e-6, sn0=50,
+                 theta_accuracy=0.002):
+        G = np.array([[1/2*self.DT**2, self.DT]]).T
+
+        A = G @ G.T
+        Q = block_diag(A, A) * var
         tracker = filterpy.common.kinematic_kf(self.DIM, self.ORDER, self.DT)
-        tracker.Q = filterpy.common.Q_discrete_white_noise(self.DIM, self.DT, var=var, block_size=self.ORDER+1)
+        tracker.Q = Q
         super().__init__(
             tracker=tracker,
             n_max=n_max,
@@ -49,4 +52,3 @@ class BenchmarkWithKalmanFilter(object):
             sim = BaseRISimulation(computer)
             sim.DT = dt
             self.sims.append(sim)
-

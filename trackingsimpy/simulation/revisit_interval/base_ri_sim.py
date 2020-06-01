@@ -110,7 +110,7 @@ class BaseRISimulation(object):
                              frames=n_frames, interval=interval_ms, blit=True)
         return anim
 
-    def visualize(self):
+    def visualize(self, meas_opacity=0.2):
         assert self.dim == 2
         self.saver.convert_to_numpy()
 
@@ -121,11 +121,11 @@ class BaseRISimulation(object):
         pos_corr = self.saver[self.tracker]['x_post'][:, ::self.order + 1]
         meas = self.saver[self.computer]['z']
 
-        ax.plot(meas[:, 0], meas[:, 1], 'x', label='measurement', alpha=0.2)
+        ax.plot(meas[:, 0], meas[:, 1], 'x', label='measurement', alpha=meas_opacity)
         ax.plot(pos[:, 0], pos[:, 1], '-', label='position')
         ax.plot(pos_est[:, 0], pos_est[:, 1], '-', label='prior position')
         ax.plot(pos_corr[:, 0], pos_corr[:, 1], '-', label='post position')
-        
+
         plt.legend()
         plt.grid(True)
         plt.show()

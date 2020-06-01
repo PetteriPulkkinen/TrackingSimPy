@@ -14,16 +14,13 @@ class IMMBenchmark(BaseRISimulation):
     DIM = 2
     DT = 0.1
 
-    def __init__(self, traj_idx=0):
+    def __init__(self, var_cv=737.5, var_ca=73.7, p_switch=0.028, traj_idx=0):
         F_ca = kinematic_state_transition(self.DT, self.ORDER, self.DIM)
         F_cv = F_ca.copy()
         F_cv[:, 2::3] = 0
-
+    
         G = np.array([[1/2*self.DT**2, self.DT, 1]]).T
         A = G @ G.T
-
-        var_cv = 737.4553075777116
-        var_ca = 73.69486570796552
 
         Q_ca = block_diag(A, A) * var_ca
         Q_cv = block_diag(A, A) * var_cv
@@ -42,7 +39,6 @@ class IMMBenchmark(BaseRISimulation):
 
         filters = [kf_cv, kf_ca]
         mu = [0.5, 0.5]
-        p_switch = 0.02803952987536741
         M = np.array([
             [1 - p_switch, p_switch],
             [p_switch, 1 - p_switch]
