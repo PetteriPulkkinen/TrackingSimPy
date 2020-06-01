@@ -1,6 +1,7 @@
 import numpy as np
 from trackingsimpy.tracking.computer import TrackingComputer
 from trackingsimpy.common.trigonometrics import angular_uncertainty_2D
+from filterpy.kalman import IMMEstimator
 import copy
 
 
@@ -51,3 +52,18 @@ class CovarianceBasedPolicy(BaseUpdatePolicy):
                 break
 
         return np.max([self.ri_min, ri])
+
+
+class FAIMMPolicy(BaseUpdatePolicy):
+    def __init__(self, tracker: IMMEstimator, ri_model: object):
+        """
+        :param tracker: IMMEstimator object which is used to track the target
+        :ri_model: List of revisit intervals for each model
+        """
+        super.__init__()
+        self.tracker = tracker
+        self.ri_model = np.array(ri_model)
+
+    def get_revisit_interval(self):
+        return self.tracker.mu @ self.ri_model
+
