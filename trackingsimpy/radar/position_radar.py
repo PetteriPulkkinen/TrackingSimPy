@@ -8,7 +8,8 @@ import numpy as np
 
 class PositionRadar(BaseRadar, Sensor):
     """Class intended to be used in a single target tracking scenarios."""
-    def __init__(self, target, sn0, pfa, beamwidth, dim, order, enable_prob_detection=True, angle_accuracy=0.002):
+    def __init__(self, target, sn0, pfa, beamwidth, dim, order, enable_prob_detection=True,
+                 angle_accuracy=0.002, dwell_time=1e-3):
         """
         Args:
             target: Target to be tracked
@@ -18,6 +19,7 @@ class PositionRadar(BaseRadar, Sensor):
             order: State order (order 0 := position, order 1 := velocity, order 2:= acceleration)
             enable_prob_detection: Whether to enable the probability for missed detections
             angle_accuracy: The standard deviation (rad) of the angle measurements (based on reference SNR=sn0 [linear])
+            dwell_time: How much time radar spends on a target on a single dwell
         """
         if dim != 2:
             raise NotImplementedError
@@ -26,6 +28,7 @@ class PositionRadar(BaseRadar, Sensor):
         Sensor.__init__(self, H, R=None)
 
         self.beamwidth = beamwidth
+        self.dwell_time = dwell_time
         self.sn0 = sn0
         self.pfa = pfa
         self.detection_prob_enabled = enable_prob_detection
