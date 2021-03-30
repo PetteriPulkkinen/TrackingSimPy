@@ -38,7 +38,7 @@ def load_trajectory(filename, order=2, dim=3, local=True):
     :param order: Desired order for the state variable (max. 2)
     :dim dim: Desired dimension for the trajectory
     """
-    resource_path = get_resource_path()
+    resource_path = get_resource_path(local)
     if local:
         df = pd.read_csv(os.path.join(resource_path, filename))
     else:
